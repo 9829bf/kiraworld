@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1a4a2e">
+<title>Kira · La Fontana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Lilita+One&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+body{font-family:'Baloo 2',sans-serif;background:#0d2617}
+
+/* ══════════ BACKGROUND SCENE ══════════ */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+
+.sky{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,
+    #0a1f2e 0%,#0d3320 18%,#145c30 38%,
+    #1f7a40 55%,#5aaf6a 72%,#a8d878 88%,#d4f0a0 100%);
+}
+
+/* animated sun */
+.sun{
+  position:absolute;
+  width:min(110px,28vw); height:min(110px,28vw);
+  border-radius:50%;
+  background:radial-gradient(circle at 38% 32%, #fffde0, #ffe066 45%, #ffa820 80%);
+  box-shadow:0 0 0 6px rgba(255,220,60,.2), 0 0 60px 20px rgba(255,180,40,.4), 0 0 120px 50px rgba(255,140,0,.2);
+  top:6%; left:12%;
+  animation:sunrise 8s ease-in-out infinite;
+}
+@keyframes sunrise{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+
+/* clouds */
+.cloud{position:absolute;border-radius:999px;background:rgba(255,255,255,.18);filter:blur(10px)}
+.cloud::before,.cloud::after{content:'';position:absolute;border-radius:50%;background:inherit}
+.cl1{width:180px;height:52px;top:10%;left:-100px;animation:cr 55s linear infinite}
+.cl1::before{width:82px;height:82px;top:-38px;left:26px}
+.cl1::after{width:64px;height:64px;top:-30px;left:94px}
+.cl2{width:130px;height:40px;top:20%;right:-80px;animation:cl 72s linear infinite}
+.cl2::before{width:60px;height:60px;top:-28px;left:16px}
+.cl2::after{width:46px;height:46px;top:-20px;left:68px}
+@keyframes cr{from{transform:translateX(0)}to{transform:translateX(130vw)}}
+@keyframes cl{from{transform:translateX(0)}to{transform:translateX(-130vw)}}
+
+/* LAYERED LANDSCAPE — La Fontana */
+.land{position:absolute;bottom:0;left:0;width:100%;height:62%}
+
+/* water shimmer */
+#waterCvs{position:absolute;bottom:0;left:0;width:100%;height:25%;pointer-events:none;z-index:2}
+/* sparkles */
+#sparkCvs{position:absolute;inset:0;pointer-events:none;z-index:1}
+
+/* ══════════ APP ══════════ */
+.app{
+  position:relative;z-index:10;height:100%;
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+  padding:10px 16px 18px;
+}
+
+/* topbar */
+.topbar{display:flex;justify-content:space-between;align-items:center;height:52px;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:9px}
+.logo-ico{
+  width:42px;height:42px;border-radius:13px;
+  background:linear-gradient(135deg,#22c55e,#15803d);
+  display:grid;place-items:center;font-size:21px;
+  box-shadow:0 4px 0 rgba(0,0,0,.3),0 6px 16px rgba(34,197,94,.4);
+}
+.logo-name{
+  font-family:'Lilita One',cursive;font-size:21px;color:#fff;
+  text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 20px rgba(100,230,130,.5);
+}
+.top-btns{display:flex;gap:8px}
+.tpbtn{
+  width:42px;height:42px;border-radius:13px;border:none;
+  background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
+  border:1.5px solid rgba(255,255,255,.25);
+  font-size:19px;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.2);color:#fff;
+}
+.tpbtn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+
+/* stage */
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end}
+
+/* ══════════ INTRO SCREEN ══════════ */
+.intro-wrap{display:flex;flex-direction:column;align-items:center}
+
+/* destination card */
+.dest-card{
+  width:100%;
+  background:linear-gradient(145deg,#1a5c32,#0f3d22);
+  border-radius:28px;
+  border:3px solid #2ecc71;
+  box-shadow:0 14px 0 #0a2514,0 20px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.1);
+  padding:20px 20px 18px;
+  position:relative;overflow:hidden;
+  margin-bottom:14px;
+}
+.dest-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 10% 10%,rgba(100,220,130,.15),transparent 60%),
+             radial-gradient(ellipse at 90% 85%,rgba(30,180,80,.1),transparent 50%);
+  pointer-events:none;
+}
+.dest-label{
+  font-family:'Lilita One',cursive;font-size:13px;letter-spacing:2px;
+  color:rgba(100,230,140,.8);text-transform:uppercase;
+  margin:0 0 4px;
+}
+.dest-name{
+  font-family:'Lilita One',cursive;font-size:min(38px,9vw);
+  color:#fff;margin:0 0 6px;
+  text-shadow:0 4px 0 rgba(0,0,0,.3),0 0 30px rgba(80,220,120,.5);
+  line-height:1.1;
+}
+.dest-desc{
+  font-size:14px;font-weight:600;
+  color:rgba(200,255,220,.8);margin:0;line-height:1.4;
+}
+.dest-mascots{
+  position:absolute;right:14px;bottom:0;
+  display:flex;align-items:flex-end;gap:4px;
+}
+
+/* speech bubble for Pío */
+.pio-bubble{
+  background:#fff;border-radius:18px 18px 4px 18px;
+  padding:8px 13px;font-size:13px;font-weight:700;color:#0f3d22;
+  box-shadow:0 6px 16px rgba(0,0,0,.2);
+  max-width:180px;line-height:1.3;
+  animation:bpop .5s cubic-bezier(.2,1.6,.4,1);
+  margin-bottom:4px;text-align:center;
+}
+@keyframes bpop{from{transform:scale(.3) translateY(10px);opacity:0}to{transform:scale(1);opacity:1}}
+
+.intro-mascot-row{
+  display:flex;align-items:flex-end;justify-content:center;gap:16px;
+  margin-bottom:-10px;
+}
+
+/* start button */
+.btn-start{
+  width:100%;border:none;border-radius:22px;
+  font-family:'Lilita One',cursive;font-size:min(28px,7vw);
+  padding:20px;cursor:pointer;color:#fff;
+  background:linear-gradient(180deg,#22c55e,#16a34a);
+  box-shadow:0 10px 0 #14532d,0 14px 28px rgba(34,197,94,.5);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:transform .08s,box-shadow .08s;
+  letter-spacing:.3px;
+}
+.btn-start:active{transform:translateY(9px);box-shadow:0 2px 0 #14532d}
+
+/* ══════════ HUNT SCREEN ══════════ */
+/* header strip */
+.hunt-hdr{
+  background:linear-gradient(135deg,#1a5c32,#0f3d22);
+  border-radius:20px;border:2.5px solid #2ecc71;
+  padding:12px 16px;margin-bottom:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 6px 0 #0a2514,0 10px 20px rgba(0,0,0,.3);
+}
+.hunt-hdr-left h2{
+  font-family:'Lilita One',cursive;font-size:20px;color:#fff;margin:0 0 2px;
+  text-shadow:0 2px 0 rgba(0,0,0,.3);
+}
+.progress-text{
+  font-size:13px;font-weight:700;color:rgba(160,255,190,.8);
+}
+.hunt-pio{width:54px;flex-shrink:0}
+
+/* items list */
+.items-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.items-list{
+  display:flex;flex-direction:column;gap:10px;
+  padding:4px 2px 8px;
+}
+
+/* individual item card */
+.item-card{
+  background:linear-gradient(145deg,#1a5c32ee,#0f3d22ee);
+  border-radius:20px;
+  border:2.5px solid rgba(46,204,113,.5);
+  box-shadow:0 8px 0 rgba(0,0,0,.25),0 12px 20px rgba(0,0,0,.2);
+  padding:14px 16px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;
+  transition:transform .1s,box-shadow .1s,border-color .2s;
+  animation:itemIn .4s cubic-bezier(.2,1.5,.4,1) both;
+  position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.item-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 0% 50%,rgba(100,220,130,.1),transparent 60%);
+  pointer-events:none;
+}
+@keyframes itemIn{from{transform:translateX(-60px) scale(.8);opacity:0}}
+.item-card:active{transform:scale(.97);box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.item-card.done{
+  background:linear-gradient(145deg,#14532dee,#0a2514ee);
+  border-color:rgba(46,204,113,.25);
+  opacity:.7;
+}
+.item-emoji{
+  font-size:min(52px,13vw);line-height:1;flex-shrink:0;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));
+  transition:transform .3s;
+}
+.item-card.done .item-emoji{
+  filter:grayscale(.5) drop-shadow(0 4px 8px rgba(0,0,0,.2));
+}
+.item-body{flex:1;min-width:0}
+.item-name{
+  font-family:'Lilita One',cursive;font-size:min(20px,5.2vw);
+  color:#fff;margin:0 0 2px;line-height:1.2;
+}
+.item-hint{
+  font-size:min(13px,3.2vw);font-weight:600;
+  color:rgba(160,255,190,.75);margin:0;line-height:1.3;
+}
+.item-card.done .item-name,.item-card.done .item-hint{color:rgba(200,255,220,.5)}
+
+/* count badge */
+.count-badge{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;
+}
+.cb{
+  width:28px;height:28px;border-radius:50%;
+  border:2.5px solid rgba(46,204,113,.6);
+  background:rgba(0,0,0,.2);
+  display:grid;place-items:center;font-size:14px;
+  transition:all .25s cubic-bezier(.2,1.4,.4,1);
+  cursor:pointer;flex-shrink:0;
+}
+.cb.ticked{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  border-color:#22c55e;
+  box-shadow:0 0 0 3px rgba(34,197,94,.3);
+  transform:scale(1.15);
+}
+
+/* check overlay */
+.item-check{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:grid;place-items:center;font-size:22px;
+  box-shadow:0 4px 0 #14532d,0 6px 12px rgba(34,197,94,.4);
+  transform:scale(0);transition:transform .35s cubic-bezier(.2,1.6,.4,1);
+}
+.item-card.done .item-check{transform:scale(1)}
+
+/* photo btn inside card */
+.photo-btn{
+  position:absolute;right:12px;top:12px;
+  width:34px;height:34px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.2);
+  font-size:16px;display:grid;place-items:center;
+  cursor:pointer;color:#fff;
+  transition:transform .08s;
+  box-shadow:0 3px 0 rgba(0,0,0,.2);
+}
+.photo-btn:active{transform:translateY(3px)}
+.item-card.done .photo-btn{display:none}
+
+/* ══════════ COMPLETION ══════════ */
+.done-screen{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  height:100%;
+}
+.done-card{
+  width:100%;
+  background:linear-gradient(145deg,#1a5c32,#0f3d22);
+  border-radius:28px;border:3px solid #22c55e;
+  box-shadow:0 14px 0 #0a2514,0 20px 40px rgba(0,0,0,.4);
+  padding:26px 22px 22px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.done-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(100,230,130,.2),transparent 60%);
+  pointer-events:none;
+}
+.done-stars{font-size:min(56px,14vw);margin-bottom:8px;display:block;
+  animation:starbounce .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes starbounce{from{transform:scale(0) rotate(-20deg);opacity:0}to{transform:scale(1);opacity:1}}
+.done-title{
+  font-family:'Lilita One',cursive;font-size:min(36px,9vw);
+  color:#fff;margin:0 0 8px;
+  text-shadow:0 4px 0 rgba(0,0,0,.3),0 0 40px rgba(100,230,130,.8);
+}
+.done-sub{font-size:16px;font-weight:700;color:rgba(200,255,220,.85);margin:0 0 18px}
+
+.album-mini{
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;
+}
+.album-mini-tile{
+  width:min(70px,18vw);
+  background:#fff;border-radius:10px 10px 6px 6px;
+  padding:4px 4px 20px;
+  box-shadow:0 6px 0 rgba(0,0,0,.2);
+  font-size:min(34px,9vw);text-align:center;
+  animation:tileIn .4s cubic-bezier(.2,1.5,.4,1) both;
+  position:relative;
+}
+.album-mini-tile img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;display:block}
+.album-mini-tile .tlbl{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:9px;font-weight:800;color:#0f3d22}
+@keyframes tileIn{from{transform:scale(.2) rotate(-20deg);opacity:0}}
+
+.btn-again{
+  width:100%;border:none;border-radius:22px;
+  font-family:'Lilita One',cursive;font-size:min(26px,6.5vw);
+  padding:18px;cursor:pointer;color:#0f3d22;
+  background:linear-gradient(180deg,#a3e635,#84cc16);
+  box-shadow:0 10px 0 #3f6212,0 14px 28px rgba(132,204,22,.45);
+  transition:transform .08s,box-shadow .08s;
+}
+.btn-again:active{transform:translateY(9px);box-shadow:0 2px 0 #3f6212}
+
+/* ══════════ CELEBRATE ══════════ */
+#confCvs{position:fixed;inset:0;z-index:50;pointer-events:none}
+.cel{
+  position:fixed;inset:0;z-index:51;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;
+}
+.cel.on{animation:celShow 1.6s ease forwards}
+@keyframes celShow{
+  0%{opacity:0;transform:scale(.4)}
+  20%{opacity:1;transform:scale(1.1)}
+  55%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(.92)}
+}
+.cel-text{
+  font-family:'Lilita One',cursive;font-size:min(54px,14vw);
+  color:#fff;
+  text-shadow:0 6px 0 rgba(0,0,0,.25),0 0 60px rgba(100,230,130,1),0 0 120px rgba(50,200,80,.8);
+}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="sky"></div>
+  <div class="sun"></div>
+  <div class="cloud cl1"></div>
+  <div class="cloud cl2"></div>
+
+  <!-- FONTANA LANDSCAPE — meadow, water, trailer silhouettes -->
+  <svg class="land" viewBox="0 0 800 380" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gr1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a5c30" stop-opacity=".7"/><stop offset="100%" stop-color="#0f3d20"/></linearGradient>
+      <linearGradient id="gr2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0f3d20"/><stop offset="100%" stop-color="#081f10"/></linearGradient>
+      <linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e7aa0" stop-opacity=".8"/><stop offset="100%" stop-color="#0d4a64" stop-opacity=".9"/></linearGradient>
+      <filter id="glow2"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+
+    <!-- distant hills -->
+    <path fill="url(#gr1)" d="M0 200 C80 160,180 190,300 168 C400 150,500 178,620 160 C700 148,760 168,800 155 V380H0Z"/>
+
+    <!-- mid field -->
+    <path fill="url(#gr2)" d="M0 270 C100 248,220 268,360 256 C480 245,600 264,740 252 C770 248,790 256,800 252 V380H0Z"/>
+
+    <!-- WATER / FUENTE area -->
+    <ellipse cx="300" cy="345" rx="120" ry="22" fill="url(#water)" opacity=".75"/>
+    <!-- fountain basin -->
+    <ellipse cx="300" cy="340" rx="52" ry="14" fill="#1a7fa0" opacity=".9"/>
+    <rect x="288" y="310" width="24" height="30" rx="4" fill="#1a6080"/>
+    <!-- water spout up -->
+    <ellipse cx="300" cy="306" rx="6" ry="18" fill="#5bc8e8" opacity=".6"/>
+    <ellipse cx="300" cy="298" rx="14" ry="6" fill="#7dd8f0" opacity=".5"/>
+    <!-- glow -->
+    <ellipse cx="300" cy="340" rx="70" ry="16" fill="#38bdf8" opacity=".12" filter="url(#glow2)"/>
+
+    <!-- REMOLQUES (trailers silhouettes) -->
+    <!-- remolque 1 big -->
+    <rect x="480" y="268" width="140" height="72" rx="6" fill="#1a3a20"/>
+    <rect x="480" y="268" width="140" height="14" rx="4" fill="#245c2a"/>
+    <rect x="610" y="290" width="28" height="50" rx="4" fill="#1a3a20"/><!-- hitch -->
+    <circle cx="500" cy="344" r="12" fill="#0f2214"/>
+    <circle cx="500" cy="344" r="7"  fill="#1f4a24"/>
+    <circle cx="600" cy="344" r="12" fill="#0f2214"/>
+    <circle cx="600" cy="344" r="7"  fill="#1f4a24"/>
+    <!-- window -->
+    <rect x="494" y="280" width="32" height="22" rx="3" fill="rgba(100,200,140,.3)" filter="url(#glow2)"/>
+    <rect x="538" y="280" width="32" height="22" rx="3" fill="rgba(100,200,140,.25)" filter="url(#glow2)"/>
+    <!-- remolque 2 small behind -->
+    <rect x="630" y="280" width="90" height="54" rx="5" fill="#122a18" opacity=".8"/>
+    <rect x="630" y="280" width="90" height="10" rx="4" fill="#1a3a20" opacity=".8"/>
+    <circle cx="648" cy="336" r="9"  fill="#0a1a0e" opacity=".8"/>
+    <circle cx="704" cy="336" r="9"  fill="#0a1a0e" opacity=".8"/>
+
+    <!-- TREES -->
+    <!-- tree 1 -->
+    <rect x="158" y="268" width="14" height="60" rx="4" fill="#2a1808"/>
+    <circle cx="165" cy="252" r="34" fill="#1a6632"/>
+    <circle cx="148" cy="262" r="24" fill="#1f7a3a"/>
+    <circle cx="182" cy="258" r="22" fill="#1f7a3a"/>
+    <!-- tree 2 -->
+    <rect x="400" y="278" width="12" height="52" rx="3" fill="#2a1808"/>
+    <circle cx="406" cy="264" r="28" fill="#155528"/>
+    <circle cx="390" cy="272" r="20" fill="#1a6632"/>
+    <circle cx="422" cy="270" r="19" fill="#1a6632"/>
+    <!-- tree 3 small -->
+    <rect x="80" y="286" width="10" height="44" rx="3" fill="#2a1808"/>
+    <circle cx="85" cy="274" r="22" fill="#1a6632"/>
+
+    <!-- bushes near water -->
+    <ellipse cx="200" cy="346" rx="36" ry="18" fill="#155528"/>
+    <ellipse cx="180" cy="340" rx="22" ry="14" fill="#1a6632"/>
+    <ellipse cx="220" cy="342" rx="20" ry="13" fill="#1a6632"/>
+    <ellipse cx="380" cy="348" rx="30" ry="15" fill="#155528"/>
+
+    <!-- grass tufts -->
+    <g fill="#1f7a3a" opacity=".7">
+      <ellipse cx="120" cy="358" rx="18" ry="7"/>
+      <ellipse cx="350" cy="360" rx="14" ry="6"/>
+      <ellipse cx="450" cy="356" rx="16" ry="6"/>
+      <ellipse cx="700" cy="360" rx="20" ry="7"/>
+      <ellipse cx="760" cy="355" rx="14" ry="5"/>
+    </g>
+
+    <!-- ground -->
+    <rect fill="#071408" x="0" y="365" width="800" height="15"/>
+  </svg>
+
+  <canvas id="waterCvs"></canvas>
+  <canvas id="sparkCvs"></canvas>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-ico">🌿</div>
+      <span class="logo-name">Kira Exploradora</span>
+    </div>
+    <div class="top-btns">
+      <button class="tpbtn" id="muteBtn">🔊</button>
+    </div>
+  </div>
+  <div class="stage" id="stage"></div>
+</div>
+
+<input type="file" accept="image/*" capture="environment" id="cam" class="hidden">
+<canvas id="confCvs"></canvas>
+<div class="cel" id="cel"><div class="cel-text" id="celTxt"></div></div>
+
+<script>
+/* ══ WATER SHIMMER ══ */
+(()=>{
+  const cv=document.getElementById('waterCvs'), ctx=cv.getContext('2d');
+  let t=0;
+  function resize(){ cv.width=innerWidth; cv.height=innerHeight*.25; }
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const y0=cv.height*.2, w=cv.width*.3, cx0=cv.width*.375;
+    for(let i=0;i<6;i++){
+      ctx.save();
+      ctx.globalAlpha=.07+.04*Math.sin(t*.04+i);
+      ctx.strokeStyle='#7dd8f0';
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      const yy=y0+i*4+3*Math.sin(t*.03+i*1.2);
+      ctx.moveTo(cx0-w/2,yy);
+      for(let x=0;x<w;x+=8){
+        ctx.lineTo(cx0-w/2+x, yy+4*Math.sin(t*.05+x*.04+i));
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+    t++;
+    requestAnimationFrame(draw);
+  }
+  resize(); draw();
+  addEventListener('resize',resize);
+})();
+
+/* ══ SPARKLES ══ */
+(()=>{
+  const cv=document.getElementById('sparkCvs'), ctx=cv.getContext('2d');
+  const cols=['#a3e635','#22c55e','#ffdd57','#38bdf8','#fff'];
+  let pts=[];
+  function resize(){
+    cv.width=innerWidth; cv.height=innerHeight;
+    pts=Array.from({length:28},()=>({
+      x:Math.random()*cv.width, y:cv.height*.3+Math.random()*cv.height*.7,
+      r:.4+Math.random()*1.8, vy:-.08-.15*Math.random(),
+      vx:(Math.random()-.5)*.06,
+      a:.1+Math.random()*.4, c:cols[0|Math.random()*cols.length]
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{
+      ctx.save(); ctx.globalAlpha=p.a; ctx.fillStyle=p.c;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.restore();
+      p.y+=p.vy; p.x+=p.vx;
+      if(p.y<cv.height*.25){ p.y=cv.height; p.x=Math.random()*cv.width; }
+    });
+    requestAnimationFrame(draw);
+  }
+  resize(); draw();
+  addEventListener('resize',resize);
+})();
+
+/* ══ CONFETTI ══ */
+const ccv=document.getElementById('confCvs'), ccx=ccv.getContext('2d');
+let cparts=[];
+function launchConfetti(){
+  ccv.width=innerWidth; ccv.height=innerHeight;
+  const cols=['#a3e635','#22c55e','#ffdd57','#ff6b35','#38bdf8','#ff3fa4','#fff'];
+  cparts=Array.from({length:110},()=>({
+    x:Math.random()*ccv.width, y:-20,
+    w:5+Math.random()*11, h:3+Math.random()*7,
+    rot:Math.random()*360, rv:(Math.random()-.5)*9,
+    vx:(Math.random()-.5)*5, vy:2+Math.random()*5,
+    c:cols[0|Math.random()*cols.length], a:1,
+    sh:['rect','circle'][0|Math.random()*2]
+  }));
+  animConf();
+}
+function animConf(){
+  ccx.clearRect(0,0,ccv.width,ccv.height);
+  let alive=false;
+  cparts.forEach(p=>{
+    if(p.a<=0)return; alive=true;
+    ccx.save(); ccx.globalAlpha=p.a; ccx.fillStyle=p.c;
+    ccx.translate(p.x+p.w/2,p.y+p.h/2); ccx.rotate(p.rot*Math.PI/180);
+    if(p.sh==='circle'){ccx.beginPath();ccx.arc(0,0,p.w/2,0,Math.PI*2);ccx.fill();}
+    else ccx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    ccx.restore();
+    p.x+=p.vx; p.y+=p.vy; p.rot+=p.rv; p.vy+=.13;
+    if(p.y>ccv.height*.75) p.a-=.022;
+  });
+  if(alive) requestAnimationFrame(animConf);
+  else ccx.clearRect(0,0,ccv.width,ccv.height);
+}
+
+/* ══ CHIME ══ */
+function chime(big){
+  if(S.muted)return;
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const notes=big?[523,659,784,1047,1318]:[523,784];
+    notes.forEach((f,i)=>{
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='triangle';o.frequency.value=f;
+      o.connect(g);g.connect(ac.destination);
+      const t=ac.currentTime+i*.1;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.18,t+.02);
+      g.gain.exponentialRampToValueAtTime(.001,t+.36);
+      o.start(t);o.stop(t+.4);
+    });
+  }catch(e){}
+}
+
+/* ══ VOICE ══ */
+let voices=[];
+function loadV(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+if(window.speechSynthesis){loadV();speechSynthesis.onvoiceschanged=loadV;}
+function speak(t){
+  if(S.muted||!window.speechSynthesis)return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang='es-ES';u.rate=.88;u.pitch=1.12;
+    const v=voices.find(v=>/es[-_]ES/i.test(v.lang))||voices.find(v=>/^es/i.test(v.lang));
+    if(v)u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ══ PÍO SVG ══ */
+function pioSVG(w){
+  return `<svg viewBox="0 0 200 200" width="${w}" height="${w}" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="100" cy="128" rx="62" ry="58" fill="#f5a623"/>
+<ellipse cx="100" cy="128" rx="48" ry="44" fill="#ffc851"/>
+<ellipse cx="152" cy="120" rx="28" ry="18" fill="#e8860a" transform="rotate(20,152,120)"/>
+<ellipse cx="48" cy="120" rx="28" ry="18" fill="#e8860a" transform="rotate(-20,48,120)"/>
+<ellipse cx="100" cy="178" rx="22" ry="12" fill="#e8860a"/>
+<ellipse cx="84" cy="182" rx="10" ry="8" fill="#d07000" transform="rotate(-15,84,182)"/>
+<ellipse cx="116" cy="182" rx="10" ry="8" fill="#d07000" transform="rotate(15,116,182)"/>
+<ellipse cx="100" cy="86" rx="52" ry="50" fill="#f5a623"/>
+<ellipse cx="100" cy="86" rx="38" ry="36" fill="#ffc851"/>
+<rect x="52" y="56" width="96" height="36" rx="18" fill="#155528"/>
+<ellipse cx="100" cy="56" rx="44" ry="12" fill="#155528"/>
+<rect x="40" y="68" width="14" height="8" rx="4" fill="#155528"/>
+<rect x="146" y="68" width="14" height="8" rx="4" fill="#155528"/>
+<rect x="88" y="44" width="24" height="14" rx="4" fill="#a3e635"/>
+<rect x="72" y="56" width="56" height="6" rx="3" fill="#a3e635" opacity=".5"/>
+<circle cx="82" cy="88" r="16" fill="#fff"/>
+<circle cx="118" cy="88" r="16" fill="#fff"/>
+<circle cx="85" cy="91" r="9" fill="#18120a"/>
+<circle cx="115" cy="91" r="9" fill="#18120a"/>
+<circle cx="88" cy="88" r="4" fill="#fff"/>
+<circle cx="117" cy="88" r="4" fill="#fff"/>
+<path d="M68 72 Q82 62 96 70" stroke="#6b4a18" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<path d="M104 70 Q118 62 132 72" stroke="#6b4a18" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<path d="M88 106 Q100 120 112 106 Q107 128 100 130 Q93 128 88 106Z" fill="#ff6b35"/>
+<path d="M88 106 Q100 112 112 106" stroke="#cc4408" stroke-width="1.5" fill="none"/>
+<circle cx="62" cy="108" r="13" fill="#ff8c70" opacity=".45"/>
+<circle cx="138" cy="108" r="13" fill="#ff8c70" opacity=".45"/>
+</svg>`;
+}
+
+/* ══ EEVEE SVG (simple cute dog) ══ */
+function eeveeSVG(w){
+  return `<svg viewBox="0 0 180 180" width="${w}" height="${w}" xmlns="http://www.w3.org/2000/svg">
+<!-- body -->
+<ellipse cx="90" cy="125" rx="55" ry="45" fill="#c8905a"/>
+<ellipse cx="90" cy="118" rx="42" ry="36" fill="#dba870"/>
+<!-- tail wagging -->
+<ellipse cx="148" cy="105" rx="18" ry="10" fill="#c8905a" transform="rotate(-30,148,105)">
+  <animateTransform attributeName="transform" type="rotate" values="-30 148 105;-10 148 105;-30 148 105" dur="0.8s" repeatCount="indefinite"/>
+</ellipse>
+<!-- head -->
+<circle cx="90" cy="74" r="46" fill="#c8905a"/>
+<circle cx="90" cy="74" r="34" fill="#dba870"/>
+<!-- ears floppy -->
+<ellipse cx="55" cy="50" rx="18" ry="28" fill="#b07840" transform="rotate(-15,55,50)"/>
+<ellipse cx="125" cy="50" rx="18" ry="28" fill="#b07840" transform="rotate(15,125,50)"/>
+<ellipse cx="55" cy="52" rx="10" ry="18" fill="#e8a080" opacity=".5" transform="rotate(-15,55,52)"/>
+<ellipse cx="125" cy="52" rx="10" ry="18" fill="#e8a080" opacity=".5" transform="rotate(15,125,52)"/>
+<!-- eyes -->
+<circle cx="76" cy="68" r="11" fill="#fff"/>
+<circle cx="104" cy="68" r="11" fill="#fff"/>
+<circle cx="78" cy="70" r="7" fill="#3a2010"/>
+<circle cx="106" cy="70" r="7" fill="#3a2010"/>
+<circle cx="80" cy="68" r="3" fill="#fff"/>
+<circle cx="108" cy="68" r="3" fill="#fff"/>
+<!-- nose -->
+<ellipse cx="90" cy="83" rx="9" ry="6" fill="#3a2010"/>
+<circle cx="88" cy="82" r="2" fill="rgba(255,255,255,.4)"/>
+<!-- mouth -->
+<path d="M82 89 Q90 97 98 89" stroke="#3a2010" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<!-- cheeks -->
+<circle cx="65" cy="82" r="10" fill="#e8806a" opacity=".4"/>
+<circle cx="115" cy="82" r="10" fill="#e8806a" opacity=".4"/>
+<!-- paws -->
+<ellipse cx="68" cy="166" rx="16" ry="10" fill="#c8905a"/>
+<ellipse cx="112" cy="166" rx="16" ry="10" fill="#c8905a"/>
+<!-- collar -->
+<rect x="58" y="108" width="64" height="12" rx="6" fill="#e8400a"/>
+<circle cx="90" cy="114" r="5" fill="#fbbf24"/>
+</svg>`;
+}
+
+/* ══ HUNT DATA — La Fontana ══ */
+// Each item: id, emoji, name, hint (what Pío says), count (how many needed), type: single|count|photo
+const FONTANA_ITEMS = [
+  {
+    id:'fuente', em:'⛲', name:'La Fuente',
+    hint:'¡Encuentra la fuente de agua! ¿Oyes cómo corre el agua?',
+    pioSay:'¡Busca la fuente! Escucha... ¿la oyes? El agua hace ¡chof chof!',
+    count:1, type:'single'
+  },
+  {
+    id:'remolque', em:'🚛', name:'Un remolque',
+    hint:'Hay remolques aparcados por aquí. ¿Ves alguno grande?',
+    pioSay:'Busca un remolque grande. Son como casas con ruedas. ¡A ver quién lo ve primero!',
+    count:1, type:'single'
+  },
+  {
+    id:'hormigas', em:'🐜', name:'3 hormigas',
+    hint:'Mira bien en el suelo cerca de la hierba. Las hormigas van en fila.',
+    pioSay:'¡Las hormigas favoritas de Eevee! Busca tres hormiguitas en el suelo. Cuenta: una, dos, tres.',
+    count:3, type:'count'
+  },
+  {
+    id:'flor', em:'🌸', name:'1 flor',
+    hint:'Busca una flor de cualquier color. ¿De qué color es la que encuentras?',
+    pioSay:'Encuentra una flor bonita. ¿Es roja, amarilla, blanca? ¡Cuéntamelo!',
+    count:1, type:'single'
+  },
+  {
+    id:'piedras', em:'🪨', name:'5 piedras',
+    hint:'Recoge piedras del suelo. Ponlas en fila y cuéntalas.',
+    pioSay:'¡Misión piedras! Recoge cinco piedras del suelo. Cuéntalas mientras las coges: una, dos, tres, cuatro, cinco.',
+    count:5, type:'count'
+  },
+  {
+    id:'pajaro', em:'🐦', name:'1 pájaro',
+    hint:'Mira a los árboles o al cielo. ¿Ves o escuchas algún pájaro?',
+    pioSay:'¡Mis amigos los pájaros! Busca uno en los árboles o volando. Si lo escuchas cantar también vale.',
+    count:1, type:'single'
+  },
+  {
+    id:'eevee', em:'🐾', name:'Huella de Eevee',
+    hint:'Busca donde Eevee ha dejado su huella en la tierra o el barro.',
+    pioSay:'¡Misión especial de Eevee! Busca donde el perro ha pisado la tierra. ¿Ves su huellaaa?',
+    count:1, type:'photo'
+  },
+];
+
+/* ══ STATE ══ */
+const S = {
+  muted: false,
+  items: [],   // runtime state per item
+  photos: {},  // id -> objectURL
+};
+
+/* ══ INIT ITEMS ══ */
+function initItems(){
+  S.items = FONTANA_ITEMS.map(it=>({
+    ...it,
+    ticked: 0,   // how many ticked (for count type)
+    done: false,
+    photo: null,
+  }));
+  S.photos = {};
+}
+
+/* ══ CAMERA ══ */
+const cam = document.getElementById('cam');
+let pendingPhotoId = null;
+cam.onchange = () => {
+  const f = cam.files && cam.files[0];
+  const url = f ? URL.createObjectURL(f) : null;
+  cam.value = '';
+  if(pendingPhotoId && url){
+    S.photos[pendingPhotoId] = url;
+    const it = S.items.find(i=>i.id===pendingPhotoId);
+    if(it){ it.done=true; it.photo=url; }
+    pendingPhotoId = null;
+    celebrate(true);
+    setTimeout(renderHunt, 1200);
+  }
+};
+
+/* ══ CELEBRATE ══ */
+function celebrate(big){
+  const phrases=['¡BIEN!','¡ENCONTRADA!','¡SÍ!','¡GENIAL!','¡BRAVO, KIRA!'];
+  const p = phrases[0|Math.random()*phrases.length];
+  document.getElementById('celTxt').textContent = p;
+  const cel = document.getElementById('cel');
+  cel.classList.remove('on'); void cel.offsetWidth; cel.classList.add('on');
+  setTimeout(()=>cel.classList.remove('on'), 1600);
+  launchConfetti();
+  chime(big);
+  if(navigator.vibrate) navigator.vibrate(big?[80,30,80,30,120]:[50]);
+  speak(p.replace(/¡|!/g,''));
+}
+
+/* ══ CHECK COMPLETE ══ */
+function checkAllDone(){
+  return S.items.every(i=>i.done);
+}
+
+/* ══ SCREENS ══ */
+const stage = document.getElementById('stage');
+
+function screenIntro(){
+  stage.innerHTML = `
+    <div class="intro-wrap">
+      <div class="pio-bubble">¡Hoy vamos a<br><b>La Fontana</b>! 🌿<br>¡Eevee ya quiere ir!</div>
+      <div style="display:flex;gap:10px;margin-bottom:-12px">
+        ${pioSVG(90)}
+        ${eeveeSVG(80)}
+      </div>
+    </div>
+    <div class="dest-card">
+      <p class="dest-label">Destino de hoy</p>
+      <h1 class="dest-name">🌿 La Fontana</h1>
+      <p class="dest-desc">La fuente, los remolques, los árboles y los bichitos os esperan. ¡Eevee también va!</p>
+    </div>
+    <button class="btn-start" id="startBtn">🚴 ¡Empezar la búsqueda!</button>
+  `;
+  document.getElementById('startBtn').onclick = () => {
+    initItems();
+    renderHunt();
+    speak('¡Vamos a La Fontana! Hoy tenemos que encontrar siete cosas. ¡Eevee, prepárate!');
+  };
+  speak('¡Hola Kira! Hoy vamos a La Fontana con Eevee. ¿Lista para la búsqueda del tesoro?');
+}
+
+function renderHunt(){
+  const done = S.items.filter(i=>i.done).length;
+  const total = S.items.length;
+  const allDone = done === total;
+
+  if(allDone){ return screenDone(); }
+
+  // current item (first not done)
+  const current = S.items.find(i=>!i.done);
+
+  stage.innerHTML = `
+    <div class="hunt-hdr">
+      <div class="hunt-hdr-left">
+        <h2>🌿 La Fontana</h2>
+        <div class="progress-text">✅ ${done} de ${total} encontrados</div>
+      </div>
+      <div class="hunt-pio">${pioSVG(54)}</div>
+    </div>
+    <div class="items-scroll">
+      <div class="items-list" id="itemsList"></div>
+    </div>
+  `;
+
+  const list = document.getElementById('itemsList');
+  S.items.forEach((it, idx) => {
+    const div = document.createElement('div');
+    div.className = 'item-card' + (it.done?' done':'');
+    div.style.animationDelay = (idx * .06) + 's';
+
+    // build inner content
+    let countBadge = '';
+    if(it.type==='count' && !it.done){
+      const cbs = Array.from({length:it.count},(_,i)=>`
+        <div class="cb${i<it.ticked?' ticked':''}" data-id="${it.id}" data-idx="${i}">
+          ${i<it.ticked?'✓':''}
+        </div>`).join('');
+      countBadge = `<div class="count-badge">${cbs}</div>`;
+    }
+
+    const photoThumb = it.photo
+      ? `<img src="${it.photo}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0">`
+      : '';
+
+    div.innerHTML = `
+      <div class="item-emoji">${it.em}</div>
+      <div class="item-body">
+        <p class="item-name">${it.name}</p>
+        <p class="item-hint">${it.hint}</p>
+        ${countBadge}
+      </div>
+      ${photoThumb}
+      ${!it.done && it.type==='photo' ? `<button class="photo-btn" data-id="${it.id}">📸</button>` : ''}
+      <div class="item-check">✓</div>
+    `;
+
+    // click handlers
+    if(!it.done){
+      if(it.type==='single'){
+        div.onclick = (e) => {
+          if(e.target.classList.contains('photo-btn')) return;
+          it.done = true;
+          celebrate(false);
+          speak(it.pioSay.split('!')[0] + '¡Encontrada!');
+          setTimeout(renderHunt, 900);
+        };
+      } else if(it.type==='count'){
+        // clicking the whole card speaks the hint
+        div.onclick = (e) => {
+          if(e.target.classList.contains('cb')) return;
+          speak(it.pioSay);
+        };
+        // clicking individual counters
+        div.querySelectorAll('.cb').forEach(cb => {
+          cb.onclick = (e) => {
+            e.stopPropagation();
+            const i = +cb.dataset.idx;
+            if(i === it.ticked){ // next in sequence
+              it.ticked++;
+              if(it.ticked >= it.count){
+                it.done = true;
+                celebrate(false);
+                speak('¡' + it.count + ' ' + it.name.toLowerCase().replace(/^\d+ /,'') + '! ¡Contaste perfectamente!');
+                setTimeout(renderHunt, 900);
+              } else {
+                chime(false);
+                if(navigator.vibrate) navigator.vibrate(30);
+                speak(String(it.ticked));
+                renderHunt();
+              }
+            }
+          };
+        });
+      } else if(it.type==='photo'){
+        div.querySelector('.photo-btn').onclick = (e) => {
+          e.stopPropagation();
+          pendingPhotoId = it.id;
+          cam.click();
+        };
+        div.onclick = () => speak(it.pioSay);
+      }
+    } else {
+      div.onclick = () => chime(false);
+    }
+
+    list.appendChild(div);
+  });
+
+  // speak current item if just arrived
+  if(current) speak(current.pioSay);
+}
+
+function screenDone(){
+  const tiles = S.items.map((it,i)=>`
+    <div class="album-mini-tile" style="animation-delay:${i*.07}s">
+      ${it.photo
+        ? `<img src="${it.photo}" alt="${it.name}">`
+        : `<span style="font-size:min(32px,8.5vw);display:block;padding:4px 0 2px;line-height:1">${it.em}</span>`}
+      <span class="tlbl">${it.name}</span>
+    </div>`).join('');
+
+  stage.innerHTML = `
+    <div class="done-screen">
+      <div class="done-card">
+        <span class="done-stars">🌟🌟🌟</span>
+        <h1 class="done-title">¡La Fontana conquistada!</h1>
+        <p class="done-sub">¡Kira y Eevee encontraron todo! ${S.items.length} tesoros descubiertos 🐾</p>
+        <div class="album-mini">${tiles}</div>
+        <button class="btn-again" id="againBtn">🔄 ¡Otra vez!</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('againBtn').onclick = screenIntro;
+  launchConfetti();
+  chime(true);
+  if(navigator.vibrate) navigator.vibrate([80,30,80,30,120,30,120]);
+  speak('¡Lo encontraste todo! ¡La Fontana conquistada! Kira y Eevee son los mejores exploradores de Pedrola.');
+}
+
+/* ══ MUTE ══ */
+document.getElementById('muteBtn').onclick = function(){
+  S.muted = !S.muted;
+  this.textContent = S.muted ? '🔇' : '🔊';
+  if(S.muted && window.speechSynthesis) speechSynthesis.cancel();
+};
+
+screenIntro();
+</script>
+</body>
+</html>
